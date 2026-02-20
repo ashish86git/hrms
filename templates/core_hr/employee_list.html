@@ -1,0 +1,175 @@
+{% extends "layout.html" %}
+{% block title %}Team Directory | HRPRO{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-2 border-[#F54927]/10 pb-8">
+        <div>
+            <nav class="flex mb-2 text-[10px] font-black text-[#F54927] uppercase tracking-[0.3em]">
+                Network / Organization Structure
+            </nav>
+
+            <h1 class="text-4xl font-black text-gray-900 tracking-tight">
+                Team <span class="text-[#F54927]">Directory</span>
+            </h1>
+
+            <p class="text-gray-500 mt-1 font-medium italic">
+                {% if current_user.role == 'admin' %}
+                    Global Company Oversight
+                {% elif current_user.role == 'manager' %}
+                    Your Managed Team
+                {% else %}
+                    Your Professional Circle
+                {% endif %}
+            </p>
+        </div>
+
+        {% if current_user.role == 'admin' %}
+        <div class="flex gap-4 flex-wrap">
+
+            <!-- ADD EMPLOYEE -->
+            <a href="{{ url_for('add_employee') }}"
+               class="inline-flex items-center justify-center bg-[#F54927] hover:bg-black text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl transition-all active:scale-95">
+                <i class="fas fa-user-plus mr-2 text-sm"></i>
+                Add New Member
+            </a>
+
+            <!-- ADD MANAGER (NEW BUTTON) -->
+            <a href="{{ url_for('add_manager') }}"
+               class="inline-flex items-center justify-center bg-black hover:bg-[#F54927] text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl transition-all active:scale-95">
+                <i class="fas fa-user-tie mr-2 text-sm"></i>
+                Add Manager
+            </a>
+
+        </div>
+        {% endif %}
+    </div>
+
+
+    <!-- STATS -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-[2rem] border border-gray-100 flex items-center gap-4">
+            <div class="w-12 h-12 bg-red-50 text-[#F54927] rounded-2xl flex items-center justify-center shadow-sm">
+                <i class="fas fa-users text-xl"></i>
+            </div>
+            <div>
+                <span class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                    Visible Members
+                </span>
+                <span class="text-xl font-black text-gray-900">
+                    {{ employees|length if employees else 0 }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- TABLE -->
+    <div class="bg-white rounded-[2.5rem] border-t-8 border-[#F54927] shadow-2xl shadow-gray-200/50 overflow-hidden">
+        <div class="overflow-x-auto">
+
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50/80">
+                        <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Identity</th>
+                        <th class="px-6 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Department</th>
+                        <th class="px-6 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Position</th>
+
+                        {% if current_user.role == 'admin' %}
+                        <th class="px-6 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                            Reporting To
+                        </th>
+                        {% endif %}
+
+                        <th class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">
+                            Connect
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-50">
+                    {% if employees %}
+                        {% for emp in employees %}
+                        <tr class="group hover:bg-gray-50/80 transition-all">
+
+                            <!-- Identity -->
+                            <td class="px-8 py-6">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 rounded-2xl bg-black text-white flex items-center justify-center font-black shadow-lg group-hover:bg-[#F54927] transition-colors">
+                                        {{ (emp.first_name or 'U')[0] }}{{ (emp.last_name or '')[0] }}
+                                    </div>
+
+                                    <div class="ml-4">
+                                        <div class="font-black text-gray-900 text-sm group-hover:text-[#F54927] transition-colors leading-none mb-1.5">
+                                            {{ emp.first_name or '' }} {{ emp.last_name or '' }}
+                                        </div>
+
+                                        <span class="px-2 py-0.5 bg-gray-100 rounded text-[8px] font-black text-gray-400 uppercase tracking-widest">
+                                            ID: #{{ emp.id }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Department -->
+                            <td class="px-6 py-6">
+                                <span class="text-[10px] font-black text-gray-600 bg-gray-100 px-3 py-1 rounded-full uppercase border border-gray-200">
+                                    {{ emp.department or 'N/A' }}
+                                </span>
+                            </td>
+
+                            <!-- Position -->
+                            <td class="px-6 py-6">
+                                <div class="text-xs font-bold text-gray-800 tracking-tight">
+                                    {{ emp.position or 'N/A' }}
+                                </div>
+                            </td>
+
+                            <!-- Reporting -->
+                            {% if current_user.role == 'admin' %}
+                            <td class="px-6 py-6">
+                                <div class="flex items-center text-xs font-bold text-[#F54927]">
+                                    <i class="fas fa-arrow-turn-up fa-rotate-90 mr-2 opacity-30"></i>
+                                    {{ emp.manager_name if emp.manager_name else 'System Admin' }}
+                                </div>
+                            </td>
+                            {% endif %}
+
+                            <!-- Email -->
+                            <td class="px-8 py-6 text-right">
+                                {% if emp.email %}
+                                <a href="mailto:{{ emp.email }}"
+                                   class="inline-flex items-center justify-center w-10 h-10 bg-gray-50 text-gray-400 hover:text-[#F54927] hover:bg-red-50 rounded-xl transition-all shadow-sm">
+                                    <i class="fas fa-envelope"></i>
+                                </a>
+                                {% else %}
+                                <span class="text-gray-300 text-xs font-bold">No Email</span>
+                                {% endif %}
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="{% if current_user.role == 'admin' %}5{% else %}4{% endif %}"
+                                class="px-8 py-20 text-center">
+                                <div class="mb-4 opacity-10">
+                                    <i class="fas fa-users-slash text-6xl"></i>
+                                </div>
+                                <p class="text-xs font-black text-gray-300 uppercase tracking-widest">
+                                    No team members found in your scope.
+                                </p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+
+{% block title %}My Documents{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+
+    <!-- ================= HEADER ================= -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 pb-8">
+        <div>
+            <h2 class="text-3xl font-black text-gray-900 tracking-tight">
+                Document <span class="text-[#ef4444]">Center</span>
+            </h2>
+            <p class="text-gray-500 font-medium">
+                {% if current_user.role == 'admin' %}
+                    Manage all employee official documents and records.
+                {% else %}
+                    Access your contracts, payslips, and official letters.
+                {% endif %}
+            </p>
+        </div>
+
+        {% if current_user.role == 'admin' %}
+        <button onclick="toggleUpload()"
+            class="bg-[#ef4444] hover:bg-[#b91c1c] text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center transition shadow-lg shadow-red-100">
+            <i data-lucide="upload" class="w-4 h-4 mr-2"></i> Upload Document
+        </button>
+        {% endif %}
+    </div>
+
+
+    <!-- ================= UPLOAD FORM ================= -->
+    {% if current_user.role == 'admin' %}
+    <div id="uploadForm" class="hidden bg-white p-8 rounded-[2rem] shadow-xl border border-gray-100">
+
+        <form method="POST"
+              action="{{ url_for('upload_document') }}"
+              enctype="multipart/form-data"
+              class="space-y-6">
+
+            <!-- Employee Select -->
+            <div>
+                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
+                    Select Employee
+                </label>
+                <select name="employee_id" required
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#ef4444] focus:ring-2 focus:ring-[#ef4444]/20 outline-none">
+                    <option value="">Choose Employee</option>
+                    {% for emp in all_employees %}
+                        <option value="{{ emp.id }}">
+                            {{ emp.first_name }} {{ emp.last_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Document Name -->
+            <div>
+                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
+                    Document Name
+                </label>
+                <input type="text" name="name" required
+                       class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#ef4444] focus:ring-2 focus:ring-[#ef4444]/20 outline-none">
+            </div>
+
+            <!-- Category -->
+            <div>
+                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
+                    Category
+                </label>
+                <select name="category" required
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#ef4444] focus:ring-2 focus:ring-[#ef4444]/20 outline-none">
+                    <option value="Contract">Contract</option>
+                    <option value="Payslip">Payslip</option>
+                    <option value="Letter">Letter</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <!-- File Upload -->
+            <div>
+                <label class="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
+                    Upload File
+                </label>
+                <input type="file" name="file" required
+                       class="w-full text-sm border border-gray-200 rounded-xl p-3">
+            </div>
+
+            <button type="submit"
+                    class="bg-[#ef4444] hover:bg-black text-white px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition">
+                Submit Document
+            </button>
+
+        </form>
+    </div>
+    {% endif %}
+
+
+    <!-- ================= DOCUMENT GRID ================= -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% if documents %}
+            {% for doc in documents %}
+            <div class="bg-white p-6 rounded-[2rem] border-2 border-gray-50 shadow-sm hover:shadow-xl hover:border-[#FFC000]/20 transition-all group relative overflow-hidden">
+
+                <div class="flex items-start justify-between mb-6">
+                    <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-[#ef4444] group-hover:bg-[#ef4444] group-hover:text-white transition-all duration-300">
+                        <i data-lucide="file-text" class="w-7 h-7"></i>
+                    </div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-[#FFC000] bg-[#FFC000]/10 px-3 py-1.5 rounded-full border border-[#FFC000]/20">
+                        {{ doc.category }}
+                    </span>
+                </div>
+
+                <div class="space-y-2">
+                    <h4 class="font-black text-gray-900 truncate text-lg tracking-tight">{{ doc.name }}</h4>
+
+                    {% if current_user.role == 'admin' %}
+                    <div class="flex items-center text-[11px] font-bold text-[#ef4444] uppercase tracking-tighter">
+                        Owner: {{ doc.employee_name }}
+                    </div>
+                    {% endif %}
+
+                    <p class="text-xs text-gray-400 font-medium italic">
+                        Uploaded: {{ doc.date }}
+                    </p>
+                </div>
+
+                <div class="mt-8 flex space-x-3">
+                    <a href="{{ url_for('view_document', doc_id=doc.id) }}"
+                       class="flex-1 bg-gray-50 hover:bg-[#FFC000]/10 hover:text-[#FFC000] text-gray-500 text-[10px] font-black py-3 rounded-xl transition-all uppercase tracking-widest">
+                        View
+                    </a>
+
+                    <a href="{{ url_for('download_document', doc_id=doc.id) }}"
+                       class="flex-1 bg-gray-50 hover:bg-[#ef4444] hover:text-white text-gray-500 text-[10px] font-black py-3 rounded-xl transition-all uppercase tracking-widest">
+                        Download
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-span-full py-24 text-center bg-white rounded-[3rem] border-4 border-dashed border-gray-50">
+                <p class="text-gray-400 font-black uppercase tracking-widest">
+                    No documents found in the archive.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+function toggleUpload() {
+    const form = document.getElementById('uploadForm');
+    form.classList.toggle('hidden');
+}
+</script>
+
+{% endblock %}

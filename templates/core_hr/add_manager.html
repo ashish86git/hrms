@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+{% block title %}Add Manager | HRPRO{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-12 animate-in fade-in duration-500">
+
+    <!-- Header -->
+    <div class="mb-10">
+        <h1 class="text-4xl font-black text-gray-900 tracking-tight">
+            Add <span class="text-[#F54927]">Manager</span>
+        </h1>
+        <p class="text-gray-500 mt-2 font-medium italic">
+            Create a new top-level manager account
+        </p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="mb-4 px-6 py-4 rounded-2xl font-bold text-sm
+                    {% if category == 'success' %}
+                        bg-green-50 text-green-700 border border-green-200
+                    {% else %}
+                        bg-red-50 text-red-700 border border-red-200
+                    {% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Form Card -->
+    <div class="bg-white rounded-[2rem] shadow-2xl shadow-gray-200/50 border-t-8 border-[#F54927] p-10">
+
+        <form method="POST" class="space-y-6">
+
+            <!-- First Name -->
+            <div>
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
+                    First Name
+                </label>
+                <input type="text" name="first_name" required
+                       class="w-full px-5 py-4 rounded-xl border border-gray-200 focus:border-[#F54927] focus:ring-2 focus:ring-[#F54927]/20 outline-none transition-all">
+            </div>
+
+            <!-- Last Name -->
+            <div>
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
+                    Last Name
+                </label>
+                <input type="text" name="last_name" required
+                       class="w-full px-5 py-4 rounded-xl border border-gray-200 focus:border-[#F54927] focus:ring-2 focus:ring-[#F54927]/20 outline-none transition-all">
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
+                    Email Address
+                </label>
+                <input type="email" name="email" required
+                       class="w-full px-5 py-4 rounded-xl border border-gray-200 focus:border-[#F54927] focus:ring-2 focus:ring-[#F54927]/20 outline-none transition-all">
+            </div>
+
+            <!-- Department -->
+            <div>
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
+                    Department
+                </label>
+                <input type="text" name="department" required
+                       class="w-full px-5 py-4 rounded-xl border border-gray-200 focus:border-[#F54927] focus:ring-2 focus:ring-[#F54927]/20 outline-none transition-all">
+            </div>
+
+            <!-- Position -->
+            <div>
+                <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
+                    Position
+                </label>
+                <input type="text" name="position" required
+                       class="w-full px-5 py-4 rounded-xl border border-gray-200 focus:border-[#F54927] focus:ring-2 focus:ring-[#F54927]/20 outline-none transition-all">
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-4 flex gap-4">
+
+                <button type="submit"
+                        class="flex-1 bg-[#F54927] hover:bg-black text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all active:scale-95">
+                    Add Manager
+                </button>
+
+                <a href="{{ url_for('employee_list') }}"
+                   class="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+{% endblock %}

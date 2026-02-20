@@ -1,0 +1,213 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Control Center{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-700">
+
+    <!-- ================= HEADER ================= -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-[2.5rem] shadow-sm border-l-8 border-gray-900">
+        <div>
+            <span class="text-[10px] font-black text-red-600 uppercase tracking-[0.3em]">System Overview</span>
+            <h1 class="text-4xl font-black text-gray-900 tracking-tight mt-1">
+                Admin <span class="text-red-600">Command Center</span>
+            </h1>
+            <p class="text-gray-500 font-medium italic mt-1">
+                Welcome back, {{ current_user.username | capitalize }}. System is running stable.
+            </p>
+        </div>
+
+        <div class="flex gap-3">
+            <button onclick="toggleEmployeeModal()"
+                class="bg-red-600 hover:bg-black text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-red-100 flex items-center">
+                <i data-lucide="user-plus" class="w-4 h-4 mr-2"></i> Onboard Staff
+            </button>
+
+            <button onclick="toggleManagerModal()"
+                class="bg-black hover:bg-red-600 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl flex items-center">
+                <i data-lucide="shield" class="w-4 h-4 mr-2"></i> Add Manager
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ================= KPI SECTION ================= -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+            <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest">Total Staff</p>
+            <h3 class="text-3xl font-black text-gray-900">{{ total_employees }}</h3>
+        </div>
+
+        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+            <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest">Live Attendance</p>
+            <h3 class="text-3xl font-black text-gray-900">{{ attendance_records|length }}</h3>
+        </div>
+
+        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+            <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest">Pending Requests</p>
+            <h3 class="text-3xl font-black text-gray-900">{{ pending_leaves|length }}</h3>
+        </div>
+
+        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+            <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest">Evaluations</p>
+            <h3 class="text-3xl font-black text-gray-900">{{ performance_data|length }}</h3>
+        </div>
+
+    </div>
+
+
+    <!-- ================= PERFORMANCE TABLE ================= -->
+    <div class="bg-white rounded-[2.5rem] shadow-sm border border-gray-50 overflow-hidden">
+
+        <div class="p-8 border-b border-gray-50 bg-gray-50/30">
+            <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight">
+                Organization Master List
+            </h2>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr>
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Employee</th>
+                        <th class="px-6 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Role</th>
+                        <th class="px-6 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Department</th>
+                        <th class="px-6 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rating</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-50">
+                    {% for perf in performance_data %}
+                    <tr class="hover:bg-red-50/30 transition-all">
+                        <td class="px-8 py-6 font-black text-gray-900">
+                            {{ perf.name }}
+                        </td>
+                        <td class="px-6 py-6 text-sm font-bold text-gray-600">
+                            {{ perf.position }}
+                        </td>
+                        <td class="px-6 py-6 text-sm font-bold text-gray-600">
+                            {{ perf.department }}
+                        </td>
+                        <td class="px-6 py-6 text-sm font-black text-red-600">
+                            {{ perf.rating }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ================= EMPLOYEE MODAL ================= -->
+<div id="addEmployeeModal" class="hidden fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden">
+
+        <div class="p-8 border-b flex justify-between items-center">
+            <h2 class="text-xl font-black">Staff Onboarding</h2>
+            <button onclick="toggleEmployeeModal()">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <form action="{{ url_for('add_employee') }}" method="POST" class="p-8 space-y-6">
+
+            <input type="text" name="first_name" placeholder="First Name" required class="input">
+            <input type="text" name="last_name" placeholder="Last Name" required class="input">
+            <input type="email" name="email" placeholder="Corporate Email" required class="input">
+            <input type="text" name="department" placeholder="Department" required class="input">
+            <input type="text" name="position" placeholder="Position" required class="input">
+
+            <button type="submit" class="btn-red">
+                Create Employee
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<!-- ================= MANAGER MODAL ================= -->
+<div id="addManagerModal" class="hidden fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden">
+
+        <div class="p-8 border-b flex justify-between items-center">
+            <h2 class="text-xl font-black">Manager Onboarding</h2>
+            <button onclick="toggleManagerModal()">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <form action="{{ url_for('add_manager') }}" method="POST" class="p-8 space-y-6">
+
+            <input type="text" name="first_name" placeholder="First Name" required class="input">
+            <input type="text" name="last_name" placeholder="Last Name" required class="input">
+            <input type="email" name="email" placeholder="Corporate Email" required class="input">
+            <input type="text" name="department" placeholder="Department" required class="input">
+            <input type="text" name="position" placeholder="Position" required class="input">
+
+            <button type="submit" class="btn-black">
+                Create Manager
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<style>
+.input {
+    width: 100%;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    font-weight: 600;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #ef4444;
+    background: #ffffff;
+}
+
+.btn-red {
+    width: 100%;
+    background: #ef4444;
+    color: white;
+    padding: 14px;
+    border-radius: 16px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.btn-black {
+    width: 100%;
+    background: black;
+    color: white;
+    padding: 14px;
+    border-radius: 16px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+</style>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+    lucide.createIcons();
+
+    function toggleEmployeeModal() {
+        document.getElementById("addEmployeeModal").classList.toggle("hidden");
+    }
+
+    function toggleManagerModal() {
+        document.getElementById("addManagerModal").classList.toggle("hidden");
+    }
+</script>
+{% endblock %}

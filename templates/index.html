@@ -1,0 +1,182 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard | HRPRO{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto p-6 space-y-10 animate-in fade-in duration-700">
+
+{% if current_user.is_authenticated %}
+
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-[2.5rem] shadow-sm border-l-8 border-[#F54927]">
+        <div>
+            <h1 class="text-4xl font-black text-gray-900 tracking-tight">
+                Welcome,
+                <span class="text-[#F54927]">
+                    {{ current_user.username.split('_')[0]|capitalize if current_user.username else "User" }}!
+                </span>
+            </h1>
+            <p class="text-gray-400 font-bold mt-1 uppercase text-[10px] tracking-[0.2em]">
+                System Access:
+                <span class="text-gray-900">
+                    {{ current_user.role|capitalize if current_user.role else "N/A" }}
+                </span>
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3 bg-gray-50 px-6 py-3 rounded-2xl border border-gray-100">
+            <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <span class="text-xs font-black text-gray-800 uppercase tracking-widest">
+                System Online
+            </span>
+        </div>
+    </div>
+
+    <!-- ================= MANAGER ================= -->
+    {% if current_user.role == 'manager' %}
+
+    <div class="space-y-6">
+        <h2 class="text-xs font-black text-gray-400 uppercase tracking-[0.3em] ml-2">
+            Executive Overview
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+            <!-- Team Leaves -->
+            <div onclick="window.location.href='{{ url_for('manager_dashboard') }}'"
+                 class="bg-white p-6 rounded-[2.5rem] shadow-xl border-2 border-transparent hover:border-[#F54927] transition-all cursor-pointer group">
+
+                <div class="bg-red-50 w-12 h-12 rounded-2xl flex items-center justify-center text-[#F54927] mb-4">
+                    <i class="fas fa-envelope-open-text text-xl"></i>
+                </div>
+
+                <h3 class="font-black text-gray-900 text-lg">Team Leaves</h3>
+                <p class="text-[10px] font-black text-[#F54927] uppercase mt-1 tracking-widest">
+                    Review Requests
+                </p>
+            </div>
+
+            <!-- Team Presence -->
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border-2 border-gray-50">
+                <h3 class="font-black text-gray-900 text-lg">Team Presence</h3>
+                <p class="text-[10px] font-black text-green-500 uppercase mt-1 tracking-widest">
+                    Live Status
+                </p>
+            </div>
+
+            <!-- Performance -->
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border-2 border-gray-50">
+                <h3 class="font-black text-gray-900 text-lg">Performance</h3>
+                <p class="text-[10px] font-black text-gray-400 uppercase mt-1 tracking-widest">
+                    Review Cycle
+                </p>
+            </div>
+
+            <!-- Compliance -->
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border-2 border-gray-50">
+                <h3 class="font-black text-gray-900 text-lg">Compliance</h3>
+                <p class="text-[10px] font-black text-gray-400 uppercase mt-1 tracking-widest">
+                    Status Overview
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= ADMIN ================= -->
+    {% elif current_user.role == 'admin' %}
+
+    <div class="space-y-6 text-center lg:text-left">
+        <h2 class="text-xs font-black text-gray-400 uppercase tracking-[0.3em] ml-2">
+            System Administration
+        </h2>
+
+        <div class="bg-black text-white p-10 rounded-[3rem] shadow-2xl flex flex-col lg:flex-row justify-between items-center gap-8">
+
+            <div>
+                <h3 class="text-3xl font-black italic">Control Everything.</h3>
+                <p class="text-gray-400 font-bold uppercase text-[10px] tracking-widest">
+                    Manage users, attendance & settings
+                </p>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="{{ url_for('employee_list') }}"
+                   class="bg-[#F54927] px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest">
+                    View Employees
+                </a>
+
+                <a href="{{ url_for('add_employee') }}"
+                   class="bg-white text-black px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest">
+                    Add Employee
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= EMPLOYEE ================= -->
+    {% elif current_user.role == 'employee' %}
+
+    <div class="space-y-8">
+        <h2 class="text-xs font-black text-gray-400 uppercase tracking-[0.3em] ml-2">
+            Personal Portal
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <a href="{{ url_for('my_leaves') }}"
+               class="bg-white p-6 rounded-3xl border-2 border-gray-50 hover:border-[#F54927] transition-all flex justify-between">
+
+                <span class="font-black text-sm uppercase tracking-widest">
+                    Apply Leave
+                </span>
+                <i class="fas fa-plus text-[#F54927]"></i>
+            </a>
+
+            <a href="{{ url_for('my_attendance') }}"
+               class="bg-white p-6 rounded-3xl border-2 border-gray-50 hover:border-[#F54927] transition-all flex justify-between">
+
+                <span class="font-black text-sm uppercase tracking-widest">
+                    Attendance
+                </span>
+                <i class="fas fa-clock text-[#F54927]"></i>
+            </a>
+
+            <a href="{{ url_for('training_courses') }}"
+               class="bg-white p-6 rounded-3xl border-2 border-gray-50 hover:border-[#F54927] transition-all flex justify-between">
+
+                <span class="font-black text-sm uppercase tracking-widest">
+                    My Courses
+                </span>
+                <i class="fas fa-graduation-cap text-[#F54927]"></i>
+            </a>
+
+        </div>
+    </div>
+
+    {% else %}
+        <div class="text-center text-red-500 font-bold">
+            Role not recognized.
+        </div>
+    {% endif %}
+
+{% else %}
+
+    <div class="text-center py-20">
+        <h1 class="text-5xl font-black text-gray-900 mb-6">
+            HR<span class="text-[#F54927]">PRO</span>
+        </h1>
+        <p class="text-gray-400 font-bold mb-8">
+            Please login to access your workspace.
+        </p>
+        <a href="{{ url_for('login') }}"
+           class="bg-[#F54927] text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest">
+            Login Now
+        </a>
+    </div>
+
+{% endif %}
+
+</div>
+{% endblock %}

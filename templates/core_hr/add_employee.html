@@ -1,0 +1,178 @@
+{% extends "layout.html" %}
+{% block title %}Onboard New Staff | HRMS{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-bottom-6 duration-700">
+
+    <style>
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 1.8rem 1.5rem 0.8rem 1.5rem;
+            background: rgba(249, 250, 251, 0.7);
+            backdrop-filter: blur(12px);
+            border: 2px solid transparent;
+            border-radius: 1.5rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: #dc2626;
+            background: white;
+            box-shadow: 0 15px 35px rgba(220,38,38,0.18);
+            transform: translateY(-3px);
+        }
+
+        .floating-label {
+            position: absolute;
+            left: 1.5rem;
+            top: 1.4rem;
+            font-size: 10px;
+            font-weight: 900;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            pointer-events: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-field:focus + .floating-label,
+        .input-field:not(:placeholder-shown) + .floating-label {
+            top: 0.6rem;
+            font-size: 8px;
+            color: #dc2626;
+        }
+
+        .select-field {
+            width: 100%;
+            padding: 1.5rem;
+            background: rgba(249, 250, 251, 0.7);
+            backdrop-filter: blur(12px);
+            border: 2px solid transparent;
+            border-radius: 1.5rem;
+            font-weight: 800;
+            transition: all 0.3s ease;
+        }
+
+        .select-field:focus {
+            border-color: #dc2626;
+            background: white;
+            box-shadow: 0 15px 35px rgba(220,38,38,0.18);
+            transform: translateY(-3px);
+        }
+    </style>
+
+    <!-- Back -->
+    <div class="flex items-center justify-between">
+        <a href="{{ url_for('admin_dashboard') }}"
+           class="group flex items-center text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-red-600 transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform"></i>
+            Back to Command Center
+        </a>
+        <div class="hidden md:block text-[10px] font-black text-gray-300 uppercase tracking-widest">
+            Step 1 of 1 • System Enrollment
+        </div>
+    </div>
+
+    <!-- Title -->
+    <div class="text-center md:text-left border-b-4 border-red-600/10 pb-10">
+        <div class="inline-block px-4 py-1.5 bg-red-50 text-red-600 rounded-full text-[9px] font-black uppercase tracking-[0.2em] mb-4">
+            New Member Enrollment
+        </div>
+        <h1 class="text-5xl font-black text-gray-900 tracking-tight">
+            Onboard <span class="text-red-600">New Staff</span>
+        </h1>
+        <p class="text-gray-500 mt-3 font-medium text-lg italic">
+            Provision system access and create official personnel records.
+        </p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white rounded-[3.5rem] shadow-2xl shadow-gray-200/60 border border-gray-100 overflow-hidden relative">
+
+        <form action="{{ url_for('add_employee') }}" method="POST" class="p-12 space-y-10 relative z-10">
+
+            <!-- PERSONAL INFO -->
+            <div class="space-y-6">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                    <div class="input-wrapper">
+                        <input type="text" name="first_name" required placeholder=" " class="input-field">
+                        <label class="floating-label">First Name</label>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <input type="text" name="last_name" required placeholder=" " class="input-field">
+                        <label class="floating-label">Last Name</label>
+                    </div>
+
+                </div>
+
+                <div class="input-wrapper">
+                    <input type="email" name="email" required placeholder=" " class="input-field">
+                    <label class="floating-label">Corporate Email</label>
+                </div>
+
+            </div>
+
+            <hr class="border-gray-100">
+
+            <!-- PROFESSIONAL INFO -->
+            <div class="space-y-6">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                    <select name="department" class="select-field">
+                        <option value="Technology">Technology</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Finance">Finance</option>
+                        <option value="HR">Human Resources</option>
+                    </select>
+
+                    <div class="input-wrapper">
+                        <input type="text" name="position" required placeholder=" " class="input-field">
+                        <label class="floating-label">Position</label>
+                    </div>
+
+                </div>
+
+                <!-- REPORTING MANAGER -->
+                <div>
+                    <select name="manager_id" class="select-field">
+                        <option value="">Select a Manager (Optional)</option>
+                        {% if managers %}
+                            {% for manager in managers %}
+                                <option value="{{ manager[0] }}">
+                                    {{ manager[1] }} {{ manager[2] }}
+                                </option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+
+            </div>
+
+            <!-- SUBMIT -->
+            <div class="pt-8 space-y-4">
+                <button type="submit"
+                        class="w-full bg-red-600 hover:bg-black text-white font-black py-6 rounded-[2rem] shadow-2xl transition-all uppercase tracking-[0.3em] text-[10px]">
+                    Authenticate & Deploy Member
+                </button>
+
+                <div class="text-center">
+                    <a href="{{ url_for('admin_dashboard') }}"
+                       class="text-[10px] font-black text-gray-400 hover:text-red-600 uppercase tracking-[0.2em] transition-colors">
+                        Discard and Return to Dashboard
+                    </a>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login | HRMS</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-orange-50 flex items-center justify-center min-h-screen">
+
+<div class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 space-y-6 border-t-8 border-orange-500">
+    <div class="text-center">
+        <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-orange-500 tracking-tight">
+            Welcome Back
+        </h2>
+        <p class="text-gray-500 mt-2 text-sm font-medium">Login using your email and password</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="space-y-2">
+            {% for category, msg in messages %}
+            <div class="px-4 py-2 rounded-xl text-sm font-bold
+                {% if category == 'success' %}bg-green-100 text-green-700{% endif %}
+                {% if category == 'error' %}bg-red-100 text-red-600{% endif %}
+                {% if category == 'info' %}bg-orange-100 text-orange-700{% endif %}">
+                {{ msg }}
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% endwith %}
+
+    <form method="POST" class="space-y-5">
+        <div>
+            <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Email</label>
+            <input type="email" name="username" required
+                   class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500 font-bold outline-none transition-all">
+        </div>
+
+        <div>
+            <label class="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Password</label>
+            <div class="relative">
+                <input type="password" id="passwordField" name="password" required
+                       class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500 font-bold outline-none transition-all">
+
+                <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-600 transition-colors">
+                    <i id="eyeIcon" data-lucide="eye" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex justify-end text-xs font-bold text-red-500 hover:text-red-700 transition">
+            <a href="{{ url_for('change_password') }}">Forgot or Change Password?</a>
+        </div>
+
+        <button type="submit"
+                class="w-full bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-xs shadow-lg shadow-orange-200 transition-all transform active:scale-[0.98]">
+            Login
+        </button>
+    </form>
+</div>
+
+<script>
+    // Lucide icons initialize karne ke liye
+    lucide.createIcons();
+
+    function togglePassword() {
+        const passwordInput = document.getElementById('passwordField');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            // Icon change to 'eye-off'
+            eyeIcon.setAttribute('data-lucide', 'eye-off');
+        } else {
+            passwordInput.type = 'password';
+            // Icon change to 'eye'
+            eyeIcon.setAttribute('data-lucide', 'eye');
+        }
+        // Re-render icon
+        lucide.createIcons();
+    }
+</script>
+</body>
+</html>
