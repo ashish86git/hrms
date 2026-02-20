@@ -1,0 +1,213 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+
+    <!-- ================= HEADER ================= -->
+    <div class="flex justify-between items-center bg-white p-8 rounded-[2rem] shadow-sm border-l-8 border-[#ef4444]">
+
+        <div>
+            <h2 class="text-3xl font-black text-gray-900 tracking-tight">
+                Attendance <span class="text-[#ef4444]">Portal</span>
+            </h2>
+            <p class="text-gray-500 font-medium italic">{{ attendance_status }}</p>
+        </div>
+
+        {% if current_user.role == 'admin' %}
+        <div class="flex gap-3 items-center flex-wrap">
+
+            <!-- DEVICE STATUS -->
+            <span class="px-4 py-2 bg-green-100 text-green-700 rounded-xl text-xs font-bold shadow-sm">
+                ● Device Connected
+            </span>
+
+            <!-- SYNC DEVICE -->
+<!--            <form action="{{ url_for('sync_essl_attendance') }}" method="POST">-->
+<!--                <button type="submit"-->
+<!--                        class="bg-[#ef4444] text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg hover:scale-105 transition">-->
+<!--                    Sync From Device-->
+<!--                </button>-->
+<!--            </form>-->
+
+            <!-- UPLOAD CSV -->
+            <form action="{{ url_for('upload_attendance_csv') }}"
+                  method="POST"
+                  enctype="multipart/form-data"
+                  class="flex items-center gap-2">
+
+                <input type="file"
+                       name="attendance_file"
+                       accept=".csv"
+                       required
+                       class="text-xs border rounded-lg p-2 bg-gray-50">
+
+                <button type="submit"
+                        class="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg hover:scale-105 transition">
+                    Upload CSV
+                </button>
+            </form>
+
+            <!-- EXPORT CSV -->
+            <form action="{{ url_for('admin_dashboard') }}" method="POST">
+                <input type="hidden" name="action" value="export_attendance">
+                <button type="submit"
+                        class="bg-[#FFC000] text-gray-900 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg hover:scale-105 transition">
+                    Export CSV
+                </button>
+            </form>
+
+        </div>
+        {% endif %}
+
+    </div>
+
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- ================= LEFT PANEL ================= -->
+        <div class="lg:col-span-1">
+
+            {% if current_user.role != 'admin' %}
+            <div class="bg-white p-8 rounded-[2rem] shadow-xl border-t-4 border-[#ef4444] space-y-6">
+
+                <h3 class="text-sm font-black uppercase">Punch Attendance</h3>
+
+                <div class="space-y-2 text-sm font-bold text-gray-600">
+                    <p>📅 {{ today_date }}</p>
+                    <p>⏰ 9:30 AM – 6:30 PM</p>
+                    <p id="liveTimer" class="text-[#ef4444] font-black hidden">⏱️ 00:00:00</p>
+                    <p id="locationText" class="text-[11px] text-gray-500 hidden"></p>
+                </div>
+
+                <form action="{{ url_for('my_attendance') }}" method="POST" id="attendanceForm">
+                    <input type="hidden" name="log_date" value="{{ today_date }}">
+                    <input type="hidden" name="total_hours" id="total_hours">
+                    <input type="hidden" name="location" id="locationField">
+
+                    <label class="text-[10px] font-black uppercase text-gray-400">
+                        Work Mode
+                    </label>
+
+                    <select id="workMode" class="w-full mt-2 p-3 rounded-xl border font-bold bg-gray-50">
+                        <option value="Office/HO">🏢 Office / HO</option>
+                        <option value="WFH">🏠 WFH</option>
+                        <option value="Client Site">📍 Client Site</option>
+                    </select>
+
+                    <div class="grid grid-cols-2 gap-4 pt-4">
+                        <button type="button" id="punchInBtn" onclick="punchIn()"
+                                class="bg-green-500 text-white font-black py-4 rounded-2xl hover:scale-105 transition">
+                            Punch In
+                        </button>
+
+                        <button type="button" id="punchOutBtn" onclick="punchOut()" disabled
+                                class="bg-red-500 text-white font-black py-4 rounded-2xl opacity-50 hover:scale-105 transition">
+                            Punch Out
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+            {% endif %}
+        </div>
+
+
+        <!-- ================= TABLE ================= -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden">
+
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            {% if current_user.role in ['admin', 'manager'] %}
+                            <th class="px-6 py-4 text-xs uppercase">Employee</th>
+                            {% endif %}
+                            <th class="px-6 py-4 text-xs uppercase">Date</th>
+                            <th class="px-6 py-4 text-xs uppercase">Mode</th>
+                            <th class="px-6 py-4 text-xs uppercase">Location</th>
+                            <th class="px-6 py-4 text-xs uppercase text-right">Hours</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y">
+                        {% for record in records %}
+                        <tr>
+                            {% if current_user.role in ['admin','manager'] %}
+                            <td class="px-6 py-4 font-bold">
+                                {{ record.employee_name if record.employee_name else 'Me' }}
+                            </td>
+                            {% endif %}
+
+                            <td class="px-6 py-4">{{ record.date }}</td>
+
+                            <td class="px-6 py-4 font-bold">
+                                {{ record.location.split('|')[0] if record.location else '—' }}
+                            </td>
+
+                            <td class="px-6 py-4 text-xs text-gray-500">
+                                {{ record.location or 'Not Captured' }}
+                            </td>
+
+                            <td class="px-6 py-4 text-right font-black text-red-500">
+                                {{ record.total_hours_str }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+let punchInTime = null;
+let timerInterval = null;
+
+function captureLocation() {
+    const mode = document.getElementById("workMode").value;
+
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            const loc = `${mode} | Lat:${pos.coords.latitude.toFixed(5)}, Long:${pos.coords.longitude.toFixed(5)}`;
+            document.getElementById("locationField").value = loc;
+            document.getElementById("locationText").innerText = loc;
+            document.getElementById("locationText").classList.remove("hidden");
+        },
+        () => {
+            document.getElementById("locationField").value = `${mode} | Permission denied`;
+        }
+    );
+}
+
+function startTimer() {
+    document.getElementById("liveTimer").classList.remove("hidden");
+    timerInterval = setInterval(() => {
+        const diff = new Date() - punchInTime;
+        document.getElementById("liveTimer").innerText =
+            `⏱️ ${new Date(diff).toISOString().substr(11, 8)}`;
+    }, 1000);
+}
+
+function punchIn() {
+    punchInTime = new Date();
+    captureLocation();
+    startTimer();
+    document.getElementById("punchInBtn").disabled = true;
+    document.getElementById("punchOutBtn").disabled = false;
+    document.getElementById("punchOutBtn").classList.remove("opacity-50");
+}
+
+function punchOut() {
+    clearInterval(timerInterval);
+    document.getElementById("total_hours").value =
+        ((new Date() - punchInTime) / 36e5).toFixed(2);
+    document.getElementById("attendanceForm").submit();
+}
+</script>
+
+{% endblock %}
