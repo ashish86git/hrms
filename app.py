@@ -4,12 +4,13 @@ import uuid
 from datetime import datetime, timedelta
 import io
 import psycopg2
+import os
 from psycopg2.extras import RealDictCursor
 from functools import wraps
 
 # --- APPLICATION SETUP ---
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_strong_secret_key_for_rbac'
+app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "dev_secret")
 
 
 db_config = {
