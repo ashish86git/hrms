@@ -665,67 +665,67 @@ def upload_attendance_csv():
     flash("Attendance Uploaded Successfully", "success")
     return redirect(url_for('admin_dashboard'))
 
-from zk import ZK
-from datetime import datetime
-
-@app.route('/sync-essl-attendance')
-@login_required
-def sync_essl_attendance():
-
-    if current_user.role != 'admin':
-        abort(403)
-
-    # 🔹 Device Configuration
-    DEVICE_IP = "192.168.1.201"   # <-- Yaha apna device IP dalein
-    DEVICE_PORT = 4370            # <-- Usually 4370 default hota hai
-    DEVICE_PASSWORD = 0           # Agar password nahi hai to 0
-
-    try:
-        zk = ZK(DEVICE_IP, port=DEVICE_PORT, timeout=5, password=DEVICE_PASSWORD)
-        conn = zk.connect()
-        conn.disable_device()
-
-        attendances = conn.get_attendance()
-
-        db_conn = get_db_connection()
-        cur = db_conn.cursor()
-
-        inserted = 0
-
-        for att in attendances:
-            employee_id = att.user_id
-            punch_time = att.timestamp
-            punch_date = punch_time.strftime('%Y-%m-%d')
-
-            cur.execute("""
-                INSERT INTO attendance_records
-                (employee_id, date, in_time, out_time, total_hours_str, location)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                ON CONFLICT DO NOTHING
-            """, (
-                employee_id,
-                punch_date,
-                None,
-                None,
-                None,
-                "Biometric Device"
-            ))
-
-            inserted += 1
-
-        db_conn.commit()
-        cur.close()
-        db_conn.close()
-
-        conn.enable_device()
-        conn.disconnect()
-
-        flash(f"{inserted} biometric records synced successfully.", "success")
-
-    except Exception as e:
-        flash(f"Device connection failed: {str(e)}", "danger")
-
-    return redirect(url_for('my_attendance'))
+# from zk import ZK
+# from datetime import datetime
+#
+# @app.route('/sync-essl-attendance')
+# @login_required
+# def sync_essl_attendance():
+#
+#     if current_user.role != 'admin':
+#         abort(403)
+#
+#     # 🔹 Device Configuration
+#     DEVICE_IP = "192.168.1.201"   # <-- Yaha apna device IP dalein
+#     DEVICE_PORT = 4370            # <-- Usually 4370 default hota hai
+#     DEVICE_PASSWORD = 0           # Agar password nahi hai to 0
+#
+#     try:
+#         zk = ZK(DEVICE_IP, port=DEVICE_PORT, timeout=5, password=DEVICE_PASSWORD)
+#         conn = zk.connect()
+#         conn.disable_device()
+#
+#         attendances = conn.get_attendance()
+#
+#         db_conn = get_db_connection()
+#         cur = db_conn.cursor()
+#
+#         inserted = 0
+#
+#         for att in attendances:
+#             employee_id = att.user_id
+#             punch_time = att.timestamp
+#             punch_date = punch_time.strftime('%Y-%m-%d')
+#
+#             cur.execute("""
+#                 INSERT INTO attendance_records
+#                 (employee_id, date, in_time, out_time, total_hours_str, location)
+#                 VALUES (%s, %s, %s, %s, %s, %s)
+#                 ON CONFLICT DO NOTHING
+#             """, (
+#                 employee_id,
+#                 punch_date,
+#                 None,
+#                 None,
+#                 None,
+#                 "Biometric Device"
+#             ))
+#
+#             inserted += 1
+#
+#         db_conn.commit()
+#         cur.close()
+#         db_conn.close()
+#
+#         conn.enable_device()
+#         conn.disconnect()
+#
+#         flash(f"{inserted} biometric records synced successfully.", "success")
+#
+#     except Exception as e:
+#         flash(f"Device connection failed: {str(e)}", "danger")
+#
+#     return redirect(url_for('my_attendance'))
 
 @app.route('/my-leaves', methods=['GET', 'POST'])
 @login_required
@@ -1213,5 +1213,5 @@ def add_manager():
     return render_template('core_hr/add_manager.html')
 
 # --- RUN THE APPLICATION ---
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run()
