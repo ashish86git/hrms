@@ -1213,5 +1213,7 @@ def add_manager():
     return render_template('core_hr/add_manager.html')
 
 # --- RUN THE APPLICATION ---
-if __name__ == "__main__":
-    app.run()
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
