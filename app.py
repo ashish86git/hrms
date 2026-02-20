@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import uuid
+from flask import abort, flash, redirect, url_for, render_template, request
+from flask_login import login_required, current_user
+from psycopg2.extras import RealDictCursor
 from datetime import datetime, timedelta
 import io
 import psycopg2
@@ -481,9 +484,7 @@ def admin_dashboard():
 
 # --- EMPLOYEE SELF-SERVICE FEATURES (Employee Role) ---
 from datetime import datetime
-from flask import abort, flash, redirect, url_for, render_template, request
-from flask_login import login_required, current_user
-from psycopg2.extras import RealDictCursor
+
 
 
 @app.route('/my-attendance', methods=['GET', 'POST'])
@@ -664,8 +665,8 @@ def upload_attendance_csv():
     flash("Attendance Uploaded Successfully", "success")
     return redirect(url_for('admin_dashboard'))
 
-# from zk import ZK
-# from datetime import datetime
+from zk import ZK
+from datetime import datetime
 
 @app.route('/sync-essl-attendance')
 @login_required
