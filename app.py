@@ -17,10 +17,10 @@ app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "dev_secret")
 
 
 db_config = {
-    'host': 'c7s7ncbk19n97r.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',
-    'user': 'u7tqojjihbpn7s',
-    'password': 'p1b1897f6356bab4e52b727ee100290a84e4bf71d02e064e90c2c705bfd26f4a5',
-    'database': 'd8lp4hr6fmvb9m',
+    'host': 'cd62ai72qd7d5j.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',
+    'user': 'ub9b7s05tbiusp',
+    'password': 'pacc283bd6ecf0615b758b5b7858e993309ef50a6a5cb9e42178205224c424645',
+    'database': 'ddt9klu1mcngoe',
     'port': 5432
 }
 
@@ -665,67 +665,67 @@ def upload_attendance_csv():
     flash("Attendance Uploaded Successfully", "success")
     return redirect(url_for('admin_dashboard'))
 
-# from zk import ZK
-# from datetime import datetime
-#
-# @app.route('/sync-essl-attendance')
-# @login_required
-# def sync_essl_attendance():
-#
-#     if current_user.role != 'admin':
-#         abort(403)
-#
-#     # 🔹 Device Configuration
-#     DEVICE_IP = "192.168.1.201"   # <-- Yaha apna device IP dalein
-#     DEVICE_PORT = 4370            # <-- Usually 4370 default hota hai
-#     DEVICE_PASSWORD = 0           # Agar password nahi hai to 0
-#
-#     try:
-#         zk = ZK(DEVICE_IP, port=DEVICE_PORT, timeout=5, password=DEVICE_PASSWORD)
-#         conn = zk.connect()
-#         conn.disable_device()
-#
-#         attendances = conn.get_attendance()
-#
-#         db_conn = get_db_connection()
-#         cur = db_conn.cursor()
-#
-#         inserted = 0
-#
-#         for att in attendances:
-#             employee_id = att.user_id
-#             punch_time = att.timestamp
-#             punch_date = punch_time.strftime('%Y-%m-%d')
-#
-#             cur.execute("""
-#                 INSERT INTO attendance_records
-#                 (employee_id, date, in_time, out_time, total_hours_str, location)
-#                 VALUES (%s, %s, %s, %s, %s, %s)
-#                 ON CONFLICT DO NOTHING
-#             """, (
-#                 employee_id,
-#                 punch_date,
-#                 None,
-#                 None,
-#                 None,
-#                 "Biometric Device"
-#             ))
-#
-#             inserted += 1
-#
-#         db_conn.commit()
-#         cur.close()
-#         db_conn.close()
-#
-#         conn.enable_device()
-#         conn.disconnect()
-#
-#         flash(f"{inserted} biometric records synced successfully.", "success")
-#
-#     except Exception as e:
-#         flash(f"Device connection failed: {str(e)}", "danger")
-#
-#     return redirect(url_for('my_attendance'))
+from zk import ZK
+from datetime import datetime
+
+@app.route('/sync-essl-attendance')
+@login_required
+def sync_essl_attendance():
+
+    if current_user.role != 'admin':
+        abort(403)
+
+    # 🔹 Device Configuration
+    DEVICE_IP = "192.168.1.201"   # <-- Yaha apna device IP dalein
+    DEVICE_PORT = 4370            # <-- Usually 4370 default hota hai
+    DEVICE_PASSWORD = 0           # Agar password nahi hai to 0
+
+    try:
+        zk = ZK(DEVICE_IP, port=DEVICE_PORT, timeout=5, password=DEVICE_PASSWORD)
+        conn = zk.connect()
+        conn.disable_device()
+
+        attendances = conn.get_attendance()
+
+        db_conn = get_db_connection()
+        cur = db_conn.cursor()
+
+        inserted = 0
+
+        for att in attendances:
+            employee_id = att.user_id
+            punch_time = att.timestamp
+            punch_date = punch_time.strftime('%Y-%m-%d')
+
+            cur.execute("""
+                INSERT INTO attendance_records
+                (employee_id, date, in_time, out_time, total_hours_str, location)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                ON CONFLICT DO NOTHING
+            """, (
+                employee_id,
+                punch_date,
+                None,
+                None,
+                None,
+                "Biometric Device"
+            ))
+
+            inserted += 1
+
+        db_conn.commit()
+        cur.close()
+        db_conn.close()
+
+        conn.enable_device()
+        conn.disconnect()
+
+        flash(f"{inserted} biometric records synced successfully.", "success")
+
+    except Exception as e:
+        flash(f"Device connection failed: {str(e)}", "danger")
+
+    return redirect(url_for('my_attendance'))
 
 @app.route('/my-leaves', methods=['GET', 'POST'])
 @login_required
@@ -1212,8 +1212,128 @@ def add_manager():
 
     return render_template('core_hr/add_manager.html')
 
+@app.route('/reimbursement', methods=['GET', 'POST'])
+@login_required
+def reimbursement():
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    # -------- SUBMIT REIMBURSEMENT --------
+
+    if request.method == 'POST':
+
+        title = request.form['title']
+        amount = request.form['amount']
+        description = request.form['description']
+
+        cur.execute("""
+        INSERT INTO reimbursements
+        (employee_id,title,amount,description)
+        VALUES (%s,%s,%s,%s)
+        """,(
+        current_user.employee_id,
+        title,
+        amount,
+        description
+        ))
+
+        conn.commit()
+
+        flash("Reimbursement submitted","success")
+
+        return redirect(url_for('reimbursement'))
+
+
+    # -------- ROLE BASED DATA --------
+
+    if current_user.role == 'admin':
+
+        cur.execute("""
+        SELECT r.*,e.first_name,e.last_name
+        FROM reimbursements r
+        LEFT JOIN employees e
+        ON r.employee_id=e.id
+        ORDER BY r.created_at DESC
+        """)
+
+    elif current_user.role == 'manager':
+
+        cur.execute("""
+        SELECT r.*,e.first_name,e.last_name
+        FROM reimbursements r
+        LEFT JOIN employees e
+        ON r.employee_id=e.id
+        WHERE e.manager_id=%s
+        OR r.employee_id=%s
+        ORDER BY r.created_at DESC
+        """,(
+        current_user.employee_id,
+        current_user.employee_id
+        ))
+
+    else:
+
+        cur.execute("""
+        SELECT *
+        FROM reimbursements
+        WHERE employee_id=%s
+        ORDER BY created_at DESC
+        """,(current_user.employee_id,))
+
+
+    records = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template(
+        "employee_ss/reimbursement.html",
+        records=records
+    )
+
+@app.route("/approve_reimbursement/<int:id>")
+@login_required
+def approve_reimbursement(id):
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    UPDATE reimbursements
+    SET status='Approved'
+    WHERE id=%s
+    """,(id,))
+
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    return redirect(url_for("reimbursement"))
+
+
+
+@app.route("/reject_reimbursement/<int:id>")
+@login_required
+def reject_reimbursement(id):
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+    UPDATE reimbursements
+    SET status='Rejected'
+    WHERE id=%s
+    """,(id,))
+
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    return redirect(url_for("reimbursement"))
+
 # --- RUN THE APPLICATION ---
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
+if __name__ == "__main__":
+    app.run()
